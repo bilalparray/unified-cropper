@@ -127,6 +127,7 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
       this.cropMode = 'postCaptureCrop';
       this.sourceMode = 'gallery';
       this.currentPage = 'camera';
+      this.capturedImage = '';
     } else {
       this.cropMode = mode;
       this.sourceMode = 'camera';
