@@ -171,12 +171,12 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
    * object is not defined (i.e. the component is being rendered on the server),
    * this method does nothing.
    */
-  startCameraPreview(): void {
+  async startCameraPreview(): Promise<void> {
     if (!this.isWindowDefined) return;
     this.sourceMode = 'camera';
     this.capturedImage = '';
     this.livePreviewActive = true;
-    CameraPreview.start({
+    await CameraPreview.start({
       position: 'rear',
       width: this.screenWidth,
       height: this.screenHeight,
@@ -223,10 +223,10 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
    * image data. If the crop mode is 'postCaptureCrop', this method processes
    * the captured image data immediately.
    */
-  cropOrCapture(): void {
+  async cropOrCapture(): Promise<void> {
     if (this.cropMode === 'preCaptureCrop') {
-      this.captureImage();
-      setTimeout(() => this.processImage(this.capturedImage), 100);
+      await this.captureImage();
+      this.processImage(this.capturedImage);
     } else {
       this.processImage(this.capturedImage);
     }

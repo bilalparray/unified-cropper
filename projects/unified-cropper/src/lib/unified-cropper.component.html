@@ -1,114 +1,115 @@
-
-<!-- Camera / Cropping Screen -->
-<div *ngIf="currentPage === 'camera'" class="page">
-  <!-- Show camera preview container if active and source is camera -->
-  <div
-    *ngIf="livePreviewActive && sourceMode === 'camera'"
-    id="cameraPreviewContainer"
-    class="container"
-  ></div>
-
-  <!-- Conditionally display cropping UI only if:
-       - In preCaptureCrop mode, OR
-       - In postCaptureCrop mode AND an image has been captured -->
-  <ng-container
-    *ngIf="
-      cropMode === 'preCaptureCrop' ||
-        (cropMode === 'postCaptureCrop' && capturedImage);
-      else captureButton
-    "
-  >
-    <!-- Display the captured image if available -->
-    <img
-      *ngIf="capturedImage"
-      [src]="'data:image/png;base64,' + capturedImage"
-      class="gallery-preview"
-      alt="Captured Image"
-      (load)="onImageLoad()"
-    />
-    <!-- Overlay Mask and Crop Box -->
-    <div class="overlay">
-      <!-- Top Mask -->
+  <!-- Camera / Cropping Screen -->
+  <div class="full-screen-container">
+    <div *ngIf="currentPage === 'camera'" class="page">
+      <!-- Show camera preview container if active and source is camera -->
       <div
-        class="mask mask-top"
-        [ngStyle]="{
-          'height.px': squarePos.top,
-          'width.px': screenWidth,
-          'top.px': 0,
-          'left.px': 0
-        }"
-      ></div>
-      <!-- Bottom Mask -->
-      <div
-        class="mask mask-bottom"
-        [ngStyle]="{
-          'height.px': screenHeight - (squarePos.top + boxHeight),
-          'width.px': screenWidth,
-          'top.px': squarePos.top + boxHeight,
-          'left.px': 0
-        }"
-      ></div>
-      <!-- Left Mask -->
-      <div
-        class="mask mask-left"
-        [ngStyle]="{
-          'height.px': boxHeight,
-          'width.px': squarePos.left,
-          'top.px': squarePos.top,
-          'left.px': 0
-        }"
-      ></div>
-      <!-- Right Mask -->
-      <div
-        class="mask mask-right"
-        [ngStyle]="{
-          'height.px': boxHeight,
-          'width.px': screenWidth - (squarePos.left + boxWidth),
-          'top.px': squarePos.top,
-          'left.px': squarePos.left + boxWidth
-        }"
+        *ngIf="livePreviewActive && sourceMode === 'camera'"
+        id="cameraPreviewContainer"
+        class="container"
       ></div>
 
-      <!-- Draggable Crop Box -->
-      <div
-        #draggableSquare
-        class="draggable-square"
-        (mousedown)="startDrag($event)"
-        (touchstart)="startDrag($event)"
-        [ngStyle]="{
-          'left.px': squarePos.left,
-          'top.px': squarePos.top,
-          'width.px': boxWidth,
-          'height.px': boxHeight
-        }"
+      <!-- Conditionally display cropping UI only if:
+         - In preCaptureCrop mode, OR
+         - In postCaptureCrop mode AND an image has been captured -->
+      <ng-container
+        *ngIf="
+          cropMode === 'preCaptureCrop' ||
+            (cropMode === 'postCaptureCrop' && capturedImage);
+          else captureButton
+        "
       >
-        <div
-          class="resize-handle"
-          (mousedown)="startResize($event)"
-          (touchstart)="startResize($event)"
-        ></div>
-      </div>
-      <button class="capture-btn" (click)="cropOrCapture()">
-        {{ cropMode === 'preCaptureCrop' ? 'Capture & Crop' : 'Crop' }}
-      </button>
-    </div>
-  </ng-container>
+        <!-- Display the captured image if available -->
+        <img
+          *ngIf="capturedImage"
+          [src]="'data:image/png;base64,' + capturedImage"
+          class="gallery-preview"
+          alt="Captured Image"
+          (load)="onImageLoad()"
+        />
+        <!-- Overlay Mask and Crop Box -->
+        <div class="overlay">
+          <!-- Top Mask -->
+          <div
+            class="mask mask-top"
+            [ngStyle]="{
+              'height.px': squarePos.top,
+              'width.px': screenWidth,
+              'top.px': 0,
+              'left.px': 0
+            }"
+          ></div>
+          <!-- Bottom Mask -->
+          <div
+            class="mask mask-bottom"
+            [ngStyle]="{
+              'height.px': screenHeight - (squarePos.top + boxHeight),
+              'width.px': screenWidth,
+              'top.px': squarePos.top + boxHeight,
+              'left.px': 0
+            }"
+          ></div>
+          <!-- Left Mask -->
+          <div
+            class="mask mask-left"
+            [ngStyle]="{
+              'height.px': boxHeight,
+              'width.px': squarePos.left,
+              'top.px': squarePos.top,
+              'left.px': 0
+            }"
+          ></div>
+          <!-- Right Mask -->
+          <div
+            class="mask mask-right"
+            [ngStyle]="{
+              'height.px': boxHeight,
+              'width.px': screenWidth - (squarePos.left + boxWidth),
+              'top.px': squarePos.top,
+              'left.px': squarePos.left + boxWidth
+            }"
+          ></div>
 
-  <!-- Capture Button Template: Shown when no image is available in postCaptureCrop mode -->
-  <ng-template #captureButton>
-    <div class="overlay">
-      <button
-        class="capture-btn"
-        *ngIf="sourceMode === 'gallery'; else cameraCapture"
-        (click)="pickImageFromGallery()"
-      >
-        Select from Gallery
-      </button>
-      <ng-template #cameraCapture>
-        <button class="capture-btn" (click)="captureImage()">
-          Capture
-        </button>
+          <!-- Draggable Crop Box -->
+          <div
+            #draggableSquare
+            class="draggable-square"
+            (mousedown)="startDrag($event)"
+            (touchstart)="startDrag($event)"
+            [ngStyle]="{
+              'left.px': squarePos.left,
+              'top.px': squarePos.top,
+              'width.px': boxWidth,
+              'height.px': boxHeight
+            }"
+          >
+            <div
+              class="resize-handle"
+              (mousedown)="startResize($event)"
+              (touchstart)="startResize($event)"
+            ></div>
+          </div>
+          <button class="capture-btn" (click)="cropOrCapture()">
+            {{ cropMode === 'preCaptureCrop' ? 'Capture & Crop' : 'Crop' }}
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Capture Button Template: Shown when no image is available in postCaptureCrop mode -->
+      <ng-template #captureButton>
+        <div class="overlay">
+          <button
+            class="capture-btn"
+            *ngIf="sourceMode === 'gallery'; else cameraCapture"
+            (click)="pickImageFromGallery()"
+          >
+            Select from Gallery
+          </button>
+          <ng-template #cameraCapture>
+            <button class="capture-btn" (click)="captureImage()">
+              Capture
+            </button>
+          </ng-template>
+        </div>
       </ng-template>
     </div>
-  </ng-template>
-</div>
+  </div>

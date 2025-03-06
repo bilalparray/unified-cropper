@@ -1,9 +1,17 @@
 :host,
 html,
 body {
-  background: transparent !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  background: transparent;
+}
+.full-screen-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* Prevent scrolling */
+  z-index: 10000; /* High z-index to overlay any other content */
+  background-color: transparent; /* or transparent if needed */
 }
 .page {
   position: relative;
