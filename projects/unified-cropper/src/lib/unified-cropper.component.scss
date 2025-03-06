@@ -35,6 +35,17 @@ body {
   object-fit: cover;
   z-index: 900;
 }
+.gallery-image {
+  width: auto;
+  height: auto;
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
+}
 .overlay {
   position: absolute;
   top: 0;

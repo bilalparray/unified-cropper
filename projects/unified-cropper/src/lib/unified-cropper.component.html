@@ -24,6 +24,7 @@
           [src]="'data:image/png;base64,' + capturedImage"
           class="gallery-preview"
           alt="Captured Image"
+          [ngClass]="{'gallery-image': sourceMode === 'gallery'}"
           (load)="onImageLoad()"
         />
         <!-- Overlay Mask and Crop Box -->
