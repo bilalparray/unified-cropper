@@ -21,6 +21,8 @@ npm i @capacitor-community/camera-preview
 
 ## How to use
 
+** Example of how to use and barcode scanning is for demo use **
+
 ```
 import { CropResponse, UnifiedCropperComponent } from 'unified-cropper';
 
@@ -35,23 +37,75 @@ import { CropResponse, UnifiedCropperComponent } from 'unified-cropper';
 export class AppComponent {
   @ViewChild('cropper') cropper!: UnifiedCropperComponent;
 
-  ngOnInit(): void {
-    setTimeout(() => this.startCropper(), 1000);
-  }
+  title = 'cropper-test';
+  croppedBase64Image: string = '';
+  startCamera: boolean = false;
   startCropper(): void {
-    this.cropper.start({ mode: 'preCaptureCrop', aspectRatio: '1:1' });
-
+    this.startCamera = true;
+    if (this.startCamera) {
+      this.cropper.start({ mode: 'gallery' });
+    }
     this.cropper.cropCompleted.subscribe((response: CropResponse) => {
       console.log('Crop response received:', response);
+      this.croppedBase64Image = response.imageBase64;
+
+      this.startCodeScanFromImage(true);
     });
   }
-  title = 'ClientApp';
+
+  async startCodeScanFromImage(isQrScan: boolean) {
+    try {
+      this.startCamera = false;
+
+      // Save the base64 image to a file and get its path
+      const filePath = await this.saveBase64Image(this.croppedBase64Image);
+
+      // Scan all formats using the file path
+      await BarcodeScanner.readBarcodesFromImage({
+        path: filePath,
+      }).then((result) => {
+        if (result.barcodes.length > 0) {
+          alert(result.barcodes[0].rawValue);
+        }
+        console.log('Barcode Scan Result:', result.barcodes);
+      });
+    } catch (error) {
+      console.error('Error during barcode scanning:', error);
+    }
+  }
+
+  async saveBase64Image(base64Data: string): Promise<string> {
+    const fileName = `crop-${Date.now()}.png`;
+
+    // Write the file to Directory.Data
+    await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Data,
+    });
+
+    // Retrieve the file URI from Directory.Data
+    const fileUriResult = await Filesystem.getUri({
+      directory: Directory.Data,
+      path: fileName,
+    });
+
+    const fileUri = fileUriResult.uri;
+
+    // For testing, return fileUri directly.
+    return fileUri;
+  }
 }
 
 
+```
 
-<lib-unified-cropper #cropper></lib-unified-cropper>
+#Html
 
-also we can start it on button click
+```
+<div class="cont">
+  <button (click)="startCropper()" [ngClass]="{ 'hidden': startCamera }">Start Cropper</button>
+</div>
 
+<lib-unified-cropper #cropper [ngClass]="{ 'hidden': !startCamera }"></lib-unified-cropper>
 ```
