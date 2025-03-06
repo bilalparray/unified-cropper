@@ -2,62 +2,56 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.0.
 
-## Code scaffolding
+# Install
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+```
+npm i unified cropper // if installing from npm
+npm i unified cropper  /// install from package.json file where in depencencies set  "unified-cropper": "file:unified-cropper-0.0.8.tgz",
 
-```bash
-ng generate component component-name
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+# Additional Capacitor Plugins Required to Work
 
-```bash
-ng generate --help
+```
+npm i @capacitor/camera
+npm i @capacitor/core
+npm i @capacitor-community/camera-preview
+
 ```
 
-## Building
+## How to use
 
-To build the library, run:
-
-```bash
-ng build unified-cropper
 ```
+import { CropResponse, UnifiedCropperComponent } from 'unified-cropper';
 
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
+@Component({
+  selector: 'app-root',
+  imports: [CommonModule, UnifiedCropperComponent],///import here
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss',
+})
 
-### Publishing the Library
 
-Once the project is built, you can publish your library by following these steps:
+export class AppComponent {
+  @ViewChild('cropper') cropper!: UnifiedCropperComponent;
 
-1. Navigate to the `dist` directory:
-   ```bash
-   cd dist/unified-cropper
-   ```
+  ngOnInit(): void {
+    setTimeout(() => this.startCropper(), 1000);
+  }
+  startCropper(): void {
+    this.cropper.start({ mode: 'preCaptureCrop', aspectRatio: '1:1' });
 
-2. Run the `npm publish` command to publish your library to the npm registry:
-   ```bash
-   npm publish
-   ```
+    this.cropper.cropCompleted.subscribe((response: CropResponse) => {
+      console.log('Crop response received:', response);
+    });
+  }
+  title = 'ClientApp';
+}
 
-## Running unit tests
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
 
-```bash
-ng test
+<lib-unified-cropper #cropper></lib-unified-cropper>
+
+also we can start it on button click
+
 ```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
