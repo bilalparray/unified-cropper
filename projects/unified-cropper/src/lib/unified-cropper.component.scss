@@ -1,0 +1,79 @@
+:host,
+html,
+body {
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.page {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.gallery-preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 900;
+}
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  pointer-events: none;
+}
+.mask {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  z-index: 950;
+}
+.draggable-square {
+  position: absolute;
+  border: 2px dashed #fff;
+  pointer-events: auto;
+  z-index: 1001;
+}
+.resize-handle {
+  position: absolute;
+  width: 20px;
+  height: 5px;
+  background: rgba(197, 35, 35, 0.7);
+  border: none;
+  border-radius: 10px;
+  bottom: 0;
+  right: 50%;
+  transform: translateX(50%);
+  cursor: se-resize;
+  pointer-events: auto;
+  z-index: 1002;
+}
+.capture-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #fff;
+  background: red;
+  z-index: 1050;
+  pointer-events: auto;
+}

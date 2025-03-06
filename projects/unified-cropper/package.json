@@ -1,6 +1,6 @@
 {
   "name": "unified-cropper",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "bundles/unified-cropper.umd.js",
   "module": "fesm2015/unified-cropper.js",
   "typings": "unified-cropper.d.ts",
