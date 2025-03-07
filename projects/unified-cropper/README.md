@@ -75,3 +75,16 @@ export class AppComponent {
 
 
 ```
+
+#css
+
+```
+body{
+  margin:0 !important;
+  padding:0 !important;
+}
+.hidden{
+  display:none;
+}
+
+```
