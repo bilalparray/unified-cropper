@@ -20,6 +20,7 @@
     "@angular/router": "^19.1.0",
     "@capacitor-community/camera-preview": "^7.0.0",
     "@capacitor/camera": "^7.0.0",
+    "@capacitor/filesystem": "^7.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

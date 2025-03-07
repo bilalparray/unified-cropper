@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { CameraPreview } from '@capacitor-community/camera-preview';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import {
   CropResponse,
   UnifiedCropperOptions,
@@ -25,35 +26,25 @@ import {
   styleUrls: ['./unified-cropper.component.scss'],
 })
 export class UnifiedCropperComponent implements OnInit, AfterViewInit {
-  // Template Refs for HTML elements
-
-  /// for draggable square
+  // Template Refs
   @ViewChild('draggableSquare', { static: false })
   draggableSquare!: ElementRef<HTMLDivElement>;
 
-  // for gallery image
   @ViewChild('galleryImg', { static: false })
   galleryImgRef!: ElementRef<HTMLImageElement>;
 
-  /// Output Event Emitters for cropresponse
   @Output() cropCompleted: EventEmitter<CropResponse> =
     new EventEmitter<CropResponse>();
 
-  // variable for check window object
   isWindowDefined: boolean = typeof window !== 'undefined';
-
-  currentPage: 'camera' = 'camera'; ///for check current page, camera or gallery
-
-  cropMode: 'preCaptureCrop' | 'postCaptureCrop' = 'postCaptureCrop'; ///for check crop mode
-
-  sourceMode: 'camera' | 'gallery' = 'camera'; ///for check source mode camera or gallery
-
-  capturedImage: string = ''; // for captured image data
-
-  livePreviewActive: boolean = false; /// for check live preview is active or not
-  boxWidth: number = 200; // for draggble box width
-  boxHeight: number = 200; // for draggble box height
-  squarePos: Position = { left: 0, top: 0 }; // for draggble box position
+  currentPage: 'camera' = 'camera';
+  cropMode: 'preCaptureCrop' | 'postCaptureCrop' = 'postCaptureCrop';
+  sourceMode: 'camera' | 'gallery' = 'camera';
+  capturedImage: string = '';
+  livePreviewActive: boolean = false;
+  boxWidth: number = 200;
+  boxHeight: number = 200;
+  squarePos: Position = { left: 0, top: 0 };
   screenWidth: number = 0;
   screenHeight: number = 0;
   dragging: boolean = false;
@@ -70,13 +61,11 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
   aspectX?: number;
   aspectY?: number;
 
+  // New property to control saving the cropped image
+  private saveToStorage: boolean = false;
+
   constructor(private ngZone: NgZone) {}
 
-  /**
-   * This lifecycle hook sets the initial position of the draggable square
-   * to the center of the screen, based on the screen's width and height.
-   * If the component is being rendered on the server, no action is taken.
-   */
   ngOnInit(): void {
     if (this.isWindowDefined) {
       this.screenWidth = window.innerWidth;
@@ -92,14 +81,6 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {}
 
-  /**
-   * Initializes the unified cropper component with the given options.
-   *
-   * @param options The options to initialize the component with.
-   * @param options.aspectRatio The aspect ratio of the crop area. If provided, the cropping square will
-   * be resized to maintain the specified aspect ratio as the user drags it.
-   * @param options.mode The mode of the unified cropper. Can be 'preCaptureCrop', 'postCaptureCrop', or 'gallery'.
-   */
   public start(options: UnifiedCropperOptions): void {
     if (options.aspectRatio) {
       this.aspectRatio = options.aspectRatio;
@@ -109,18 +90,10 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
         this.aspectY = parseFloat(parts[1]);
       }
     }
+    // Store the saveToStorage option (default is false if not provided)
+    this.saveToStorage = options.saveToStorage || false;
     this.setCropMode(options.mode);
   }
-
-  /**
-   * Sets the crop mode and source mode of the cropper component.
-   *
-   * @param mode The desired crop mode for the component. Can be 'preCaptureCrop',
-   * 'postCaptureCrop', or 'gallery'. If 'gallery' is selected, the source mode is
-   * set to 'gallery' and crop mode is set to 'postCaptureCrop'. For other modes,
-   * the crop mode and source mode are set to 'camera'. If the window object is
-   * defined, the camera preview is started for non-gallery modes.
-   */
 
   setCropMode(mode: 'preCaptureCrop' | 'postCaptureCrop' | 'gallery'): void {
     if (mode === 'gallery') {
@@ -138,13 +111,6 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
     }
   }
 
-  /**
-   * Allows the user to select an image from the photo gallery on their device.
-   * If the user selects an image, it is stored in the component's capturedImage
-   * property. If the live preview is active, it is stopped prior to opening
-   * the gallery. If the gallery image selection fails for any reason, an error
-   * message is logged to the console.
-   */
   async pickImageFromGallery(): Promise<void> {
     try {
       const photo = await Camera.getPhoto({
@@ -163,15 +129,6 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
     }
   }
 
-  /**
-   * Starts the camera preview and sets the live preview active flag to true.
-   *
-   * This method is called when the user selects the camera as the source for
-   * the unified cropper. It sets the source mode to 'camera', clears any
-   * existing captured image, and starts the camera preview. If the window
-   * object is not defined (i.e. the component is being rendered on the server),
-   * this method does nothing.
-   */
   async startCameraPreview(): Promise<void> {
     if (!this.isWindowDefined) return;
     this.sourceMode = 'camera';
@@ -189,14 +146,6 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
       .catch((error) => console.error('Error starting camera preview:', error));
   }
 
-  /**
-   * Captures an image from the camera preview and stores it in the capturedImage
-   * property. If the camera preview is not active or the crop mode is not
-   * 'postCaptureCrop', this method does nothing. If the image data is not
-   * successfully captured, an error message is logged to the console. If the
-   * image data is captured successfully, the capturedImage property is updated
-   * and the camera preview is stopped if the crop mode is 'postCaptureCrop'.
-   */
   async captureImage(): Promise<void> {
     if (!this.isWindowDefined) return;
     if (!this.livePreviewActive && this.cropMode === 'postCaptureCrop') return;
@@ -217,13 +166,6 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
       .catch((error) => console.error('Capture error:', error));
   }
 
-  /**
-   * Triggers image capture or processing based on the current crop mode.
-   * If the crop mode is 'preCaptureCrop', this method captures an image from
-   * the camera preview and, after a brief delay, processes the resulting
-   * image data. If the crop mode is 'postCaptureCrop', this method processes
-   * the captured image data immediately.
-   */
   async cropOrCapture(): Promise<void> {
     if (this.cropMode === 'preCaptureCrop') {
       await this.captureImage();
@@ -234,21 +176,27 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Processes the captured or selected image by cropping it and emitting
-   * the resulting image data as a base64 string. The image data is cropped
-   * based on the position and size of the draggable square. If the image
-   * source is the gallery, the image is first scaled to fit the container
-   * and then cropped. If the image source is the camera, the image is
-   * cropped directly from the camera preview. The resulting image data
-   * is emitted as a base64 string along with additional metadata about
-   * the image, such as its name, path, source type, and file type.
-   *
-   * @param base64 The base64 string representation of the image data to
-   *               be processed.
+   * Saves the cropped image to device storage if saveToStorage is true.
+   * Returns the saved image path.
    */
+  private async saveCroppedImage(base64Data: string): Promise<string> {
+    const fileName = `cropped-${new Date().getTime()}.png`;
+    await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Documents, // or Directory.Documents depending on your needs
+    });
+    const fileUriResult = await Filesystem.getUri({
+      directory: Directory.Documents,
+      path: fileName,
+    });
+    return fileUriResult.uri; // Return the URI (or adjust if your plugin requires a specific format)
+  }
+
   private processImage(base64: string): void {
     const img = new Image();
-    img.onload = () => {
+    // Mark the onload callback as async so we can await saving to storage
+    img.onload = async () => {
       let cropX: number, cropY: number, cropWidth: number, cropHeight: number;
       if (this.sourceMode === 'gallery' && this.galleryImgRef) {
         const containerRect =
@@ -274,9 +222,9 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
           (naturalWidth / displayedWidth);
         cropY =
           (cropRect.top - containerTop - offsetY) *
-          (naturalHeight / displayedHeight);
+          (naturalHeight / displayedWidth);
         cropWidth = cropRect.width * (naturalWidth / displayedWidth);
-        cropHeight = cropRect.height * (naturalHeight / displayedHeight);
+        cropHeight = cropRect.height * (naturalHeight / displayedWidth);
       } else {
         const scaleX = img.width / this.screenWidth;
         const scaleY = img.height / this.screenHeight;
@@ -310,13 +258,25 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
           });
         }
         const base64Result = croppedDataUrl.split(',')[1];
+        // Prepare the crop response
         const responseObj: CropResponse = {
           imageName: `IMG_${new Date().getTime()}.png`,
-          imagePath: '',
+          imagePath: '', // can be used for in-memory images
           imageSourceType: this.sourceMode,
           imageType: '.png',
           imageBase64: base64Result,
         };
+        // If saving is enabled, save the cropped image and include the path in the response
+        if (this.saveToStorage) {
+          try {
+            const savedPath = await this.saveCroppedImage(
+              croppedDataUrl.split(',')[1]
+            );
+            responseObj.savedImagePath = savedPath;
+          } catch (saveError) {
+            console.error('Error saving cropped image:', saveError);
+          }
+        }
         console.log('Crop Completed:', responseObj);
         this.cropCompleted.emit(responseObj);
       } else {
@@ -326,14 +286,8 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
     img.src = 'data:image/png;base64,' + base64;
   }
 
-  /**
-   * Starts the drag gesture by storing the initial position of the
-   * draggable square and the client coordinates of the initial touch
-   * or mouse event. It also adds event listeners for subsequent drag
-   * events and the end of the drag gesture.
-   * @param event The initial touch or mouse event that triggered the
-   *              drag gesture.
-   */
+  // ... existing drag and resize methods remain unchanged ...
+
   startDrag(event: MouseEvent | TouchEvent): void {
     event.preventDefault();
     if ((event.target as HTMLElement).classList.contains('resize-handle')) {
@@ -387,17 +341,6 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
     document.removeEventListener('touchend', this.stopDrag);
   };
 
-  /**
-   * Starts the resize operation.
-   *
-   * This method is called when the user starts a drag operation on one of
-   * the resize handles. It sets the isResizing flag to true and stores the
-   * initial values of the mouse position, box width, and box height. It
-   * then adds event listeners to the document to track the mouse or touch
-   * movement and to stop the resize operation when the user releases the
-   * mouse or touch.
-   * @param event The event that triggered the resize operation.
-   */
   startResize(event: MouseEvent | TouchEvent): void {
     event.preventDefault();
     event.stopPropagation();
@@ -462,14 +405,6 @@ export class UnifiedCropperComponent implements OnInit, AfterViewInit {
     document.removeEventListener('touchend', this.stopResize);
   };
 
-  /**
-   * Resets the crop box to its default size and position.
-   *
-   * If the image source is the gallery, the crop box is resized to half the
-   * width and height of the image container and positioned at the center of
-   * the container. If the image source is the camera, the crop box is reset
-   * to a fixed size of 200x200 and positioned at the center of the screen.
-   */
   resetCropBox(): void {
     if (this.sourceMode === 'gallery' && this.galleryImgRef) {
       const containerRect =

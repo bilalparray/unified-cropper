@@ -56,6 +56,12 @@ export interface CropResponse {
    * for further processing.
    */
   imageBase64: string;
+
+  /**
+   * (Optional) If the cropped image was saved to storage, this property
+   * contains the device file path where it was saved.
+   */
+  savedImagePath?: string;
 }
 
 /**
@@ -82,4 +88,11 @@ export interface UnifiedCropperOptions {
    * If not provided, the cropper may allow free-form cropping.
    */
   aspectRatio?: string;
+
+  /**
+   * (Optional) If true, the cropped image will be saved to device storage
+   * using the Filesystem API. When enabled, the resulting CropResponse
+   * will include the saved image path in the 'savedImagePath' property.
+   */
+  saveToStorage?: boolean;
 }
